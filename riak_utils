@@ -1,0 +1,56 @@
+#!/usr/bin/python
+
+"""
+
+Usage:
+     ./riak_util -r <ring_size> -o "<oid>"
+
+"""
+
+import pkgutil
+import importlib
+
+packages = pkgutil.walk_packages(path='.')
+for importer, name, is_package in packages:
+        mod = importlib.import_module(name)
+
+import sys
+import getopt
+import riak_utils
+
+def main():
+  # parse command line options
+  ring_size=None
+  oid=None
+  try:
+    opts, args = getopt.getopt(sys.argv[1:], "hr:o:", ["help","ring-size","oid"])
+  except getopt.error, msg:
+    print msg
+    print "for help use --help"
+    sys.exit(2)
+
+  if len(opts) < 1:
+    helpmsg()
+
+  print opts
+
+  # process options
+  for o, a in opts:
+    if o in ("-h", "--help"):
+      print __doc__
+      sys.exit(0)
+    if o in "-r":
+      ring_size = a
+    if o in "-o":
+      oid = a
+
+  print "%s - %s" % (oid,ring_size)
+  print riak_utils.whatp(oid,int(ring_size))
+
+def helpmsg():
+    print "for help use --help"
+    print "for options use --options"
+    print __doc__
+
+if __name__ == "__main__":
+  main()
