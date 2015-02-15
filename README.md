@@ -214,4 +214,18 @@ not found
 not found
 ```
 
+Invoking from riak attach produces the same result:
+```
+(dev1@127.0.0.1)23> chash:key_of({{<<"fodddo">>,<<"foo">>},<<"bar">>}).
+{trace,<6166.2281.0>,call,
+       {chash,key_of,[{{<<"fodddo">>,<<"foo">>},<<"bar">>}]}}
+{trace,<6166.2281.0>,return_from,
+       {chash,key_of,1},
+       <<217,141,87,102,4,57,11,252,233,16,190,235,105,146,157,105,113,152,3,
+         152>>}
+<<217,141,87,102,4,57,11,252,233,16,190,235,105,146,157,
+  105,113,152,3,152>>
+  
+```
+
 
