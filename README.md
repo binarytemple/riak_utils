@@ -55,7 +55,13 @@ Out[133]: '\x83h\x03k\x00\x01ak\x00\x01ak\x00\x01a'
 
 ```
 
-A further complication is the Riak implementation of consistent hashing. I can't tell from looking at the method signatures 
+A further complication is the Riak implementation of consistent hashing http://basho.github.io/riak_core/chash.html#key_of-1. 
+
+I can't tell from looking at the [implemention](https://github.com/basho/riak_core/blob/ddab30a9f86c0e6566d788731ab2596a40e2729a/src/chash.erl) exactly how I can replicate the logic in pure python.
+
+
+
+
 
 
 
