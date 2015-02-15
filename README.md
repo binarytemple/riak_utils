@@ -59,7 +59,19 @@ A further complication is the Riak implementation of consistent hashing http://b
 
 I can't tell from looking at the [implemention](https://github.com/basho/riak_core/blob/ddab30a9f86c0e6566d788731ab2596a40e2729a/src/chash.erl) exactly how I can replicate the logic in pure python.
 
+# First look at the implementation
 
+https://github.com/basho/riak_core/blob/7898729fa72af47194df410b480f5df78d488d7b/src/riak_core_util.erl#L260
+
+Looking at a bucket properties I see that the default consistent hashing functions is
+
+"chash_keyfun":{"mod":"riak_core_util","fun":"chash_std_keyfun"},
+
+So this is where the magic happens
+
+```
+riak_core_util:chash_std_keyfun/
+```
 
 
 
