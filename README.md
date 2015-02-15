@@ -73,7 +73,7 @@ So this is where the magic happens
 riak_core_util:chash_std_keyfun/
 ```
 
-I get Erlang debugging up and running to trace into this function call 
+I get Erlang debugging up and running to trace into this function call I read [this as reference](http://blog.differentpla.net/blog/2014/05/08/debugging-erlang-with-a-remote-shell/)
 
 ```
 ** exception error: undefined function debugger:start/0
@@ -128,10 +128,33 @@ test%
 [~%]curl -XPUT "localhost:10018/buckets/foo/keys/bar" -d test
 ```
 
+Do your thing; enjoy the tracing.
 
+Then turn it off:
+```
+11> dbg:stop_clear().
+```
 
+Back on, and continue onwards
 
+```
+(dev1@127.0.0.1)18> dbg:p(all, c).
+{ok,[{matched,'dev1@127.0.0.1',1040}]}
+(dev1@127.0.0.1)19> dbg:tpl(chash,key_of, '_', [ {'_', [], [{return_trace}] }] ).
+{ok,[{matched,'dev1@127.0.0.1',1},{saved,1}]}
+```
 
+And the results
+
+```
+{trace,<6166.763.0>,call,{chash,key_of,[{<<"foo">>,<<"bar">>}]}}
+{trace,<6166.784.0>,return_from,
+       {chash,key_of,1},
+       <<73,212,27,234,104,13,150,207,0,82,86,183,125,225,172,154,135,46,6,112>>}
+{trace,<6166.763.0>,return_from,
+       {chash,key_of,1},
+       <<73,212,27,234,104,13,150,207,0,82,86,183,125,225,172,154,135,46,6,112>>}
+```
 
 
 
