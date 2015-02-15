@@ -188,6 +188,30 @@ not found
 
 So it doesn't look like anything fancy is happening there. Lets investigate further why the values are wrong.
 
+```
+       {chash,key_of,[{{<<"fodddo">>,<<"foo">>},<<"bar">>}]}}
+{trace,<6166.2281.0>,return_from,
+       {chash,key_of,1},
+       <<217,141,87,102,4,57,11,252,233,16,190,235,105,146,157,105,113,152,3,
+         152>>}
+<<217,141,87,102,4,57,11,252,233,16,190,235,105,146,157,
+  105,113,152,3,152>>
+(dev1@127.0.0.1)23>
+───────────────────────────────────────────────────────────────────────────────────────────────────
 
+WARNING: Nodes in this cluster can no longer be
+downgraded to a version of Riak prior to 2.0
+[/basho/riak/dev%]
+[/basho/riak/dev%]curl -XGET "localhost:10018/types/default/buckets/foo/keys/bar"                  test%                                                                                              [/basho/riak/dev%]curl -XGET "localhost:10018/types/foodor/buckets/foo/keys/bar"
+Unknown bucket type: foodor%                                                                       [/basho/riak/dev%]curl -XGET "localhost:10018/types/foodoo/buckets/foo/keys/bar"
+Unknown bucket type: foodoo%                                                                       [/basho/riak/dev%]curl -XGET "localhost:10018/types/fodoo/buckets/foo/keys/bar"
+Unknown bucket type: fodoo%                                                                        [/basho/riak/dev%]curl -XGET "localhost:10018/types/fodddo/buckets/foo/keys/bar"
+not found
+[/basho/riak/dev%]curl -XGET "localhost:10018/types/fodddo/buckets/foo/keys/bar"
+not found
+[/basho/riak/dev%]
+[/basho/riak/dev%]curl -XGET "localhost:10018/types/fodddo/buckets/foo/keys/bar"
+not found
+```
 
 
