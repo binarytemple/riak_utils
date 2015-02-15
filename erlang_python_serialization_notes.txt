@@ -300,6 +300,11 @@ bar
             [{erl_eval,expr,3,[]}]}}
 64: f(Ko)
 -> ok
+
+
+# Kind losing it on the hashing algo 
+
+
 65: Ko = chash:key_of({"asd","ads"})
 -> <<220,253,159,226,69,254,51,149,221,52,19,201,222,120,162,
      3,148,202,193,219>>
@@ -377,3 +382,18 @@ bar
 -> bar
 ok
 (dev1@127.0.0.1)78>
+
+
+
+Implement the hashing algorith used by `riak_core_util:chash_key` in Python using module py_interface (available from pip).
+
+The goal is that if the python module is provided with:
+
+bucket_type, bucket, key 
+
+it will generate the same partition identifier as if the operation were performed in Erlang
+
+
+
+
+
