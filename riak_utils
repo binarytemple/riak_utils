@@ -10,9 +10,9 @@ Usage:
 import pkgutil
 import importlib
 
-packages = pkgutil.walk_packages(path='.')
-for importer, name, is_package in packages:
-        mod = importlib.import_module(name)
+# packages = pkgutil.walk_packages(path='.')
+# for importer, name, is_package in packages:
+#         mod = importlib.import_module(name)
 
 import sys
 import getopt
@@ -44,7 +44,7 @@ def main():
     if o in "-o":
       oid = a
 
-  print "%s - %s" % (oid,ring_size)
+  #print "%s - %s" % (oid,ring_size)
   print riak_utils.whatp(oid,int(ring_size))
 
 def helpmsg():

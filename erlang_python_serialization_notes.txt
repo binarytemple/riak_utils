@@ -1,0 +1,379 @@
+ portNum = 4369
+ ownPortNum = 1234
+ 
+ ownNodeName = "py_interface_test"
+ for (optchar, optarg) in opts:
+ if optchar == "-?":
+ print "Usage: %s host [port]" % argv[0]
+ sys.exit(1)
+ elif optchar == "-p":
+ ownPortNum = string.atoi(optarg)
+ elif optchar == "-n":
+ ownNodeName = optarg
+ if len(args) >= 2:
+ hostName = args[0]
+ portNum = string.atoi(args[1])
+ elif len(args) == 1:
+ hostName = args[0]
+
+import sys
+import types
+import string
+import socket
+import getopt
+from py_interface import erl_epmd
+from py_interface import erl_common
+from py_interface import erl_async_conn
+from py_interface import erl_eventhandler
+e = None
+global e
+hostName = "localhost"
+portNum = 4369
+ownPortNum = 1234
+ownNodeName = "py_interface_test"
+
+e = erl_epmd.ErlEpmd(hostName, portNum)
+e.SetOwnPortNum(ownPortNum)
+e.SetOwnNodeName(ownNodeName)
+
+
+
+In [54]: def p(x):
+   ....:     print x
+      ....:
+
+      In [55]:  e.PortPlease2Req(nodeToCheckFor, p )
+
+      In [56]:
+
+--------------------
+
+n=None
+hostName = "localhost"
+ownNodeName = "py_interface_test"
+cookie = "cookie"
+
+print "Creating node..."
+n = erl_node.ErlNode(ownNodeName, erl_opts.ErlNodeOpts(cookie=cookie))
+print "Publishing node..."
+n.Publish()
+print "Creating mbox..."
+m = n.CreateMBox(__TestMBoxCallback)
+print "Registering mbox as p..."
+m.RegisterName("p")
+
+import sys
+import types
+import string
+import socket
+import getopt
+
+
+from py_interface import erl_term
+from py_interface import erl_node
+from py_interface import erl_opts
+from py_interface import erl_common
+from py_interface import erl_eventhandler
+
+eh = None
+
+
+def print_usage():
+    print "Usage: %s [opts] remote-node mod fn arg ..." % sys.argv[0]
+    print "Opts:"
+    print "-?              print usage"
+    print "-d              enable debugging info"
+    print "-t <seconds>    timeout: exit after this many seconds"
+    print "-n <name|sname> set the python node's name"
+    print "-c <cookie>     set cookie"
+
+def _TestMBoxCallback(msg, *x, **kw):
+    print "Incoming msg=%s" % `msg`
+
+def _TestMBoxRPCResponse(msg):
+    global eh
+    print "RPC answer: %s" % `msg`
+    eh.StopLooping()
+
+
+def __TestMBoxCallback(msg):
+    print "Incoming msg=%s" % `msg`
+
+def SendTheRPC(mbox, remoteNode, m, f, a):
+    print "Sending:"
+    print "  remoteNode=%s" % `remoteNode`
+    print "  m=%s" % `m`
+    print "  f=%s" % `f`
+    print "  a=%s" % `a`
+    mbox.SendRPC(remoteNode, m, f, a, _TestMBoxRPCResponse)
+
+def DoTimeout():
+    global eh
+    print "Timeout!"
+    eh.StopLooping()
+
+def ExprRebuildAtoms(expr):
+    if type(expr) == types.StringType:
+        if len(expr) >= 2 and expr[0] == expr[-1] == "'":
+            atomText = expr[1:-1]
+            return erl_term.ErlAtom(atomText)
+        else:
+            return expr
+    elif type(expr) == types.ListType:
+        rebuiltList = []
+        for elem in expr:
+            rebuiltElem = ExprRebuildAtoms(elem)
+            rebuiltList.append(rebuiltElem)
+        return rebuiltList
+    elif type(expr) == types.TupleType:
+        rebuiltList = []
+        for elem in list(expr):
+            rebuiltElem = ExprRebuildAtoms(elem)
+            rebuiltList.append(rebuiltElem)
+        return tuple(rebuiltList)
+    else:
+        return expr
+
+def main(argv):
+    global eh
+
+    try:
+        opts, args = getopt.getopt(argv[1:], "?dn:c:t:", ['help'])
+    except getopt.error, info:
+        print info
+        sys.exit(1)
+
+    hostName = "localhost"
+    ownNodeName = "py_interface_test"
+    cookie = "cookie"
+    doDebug = 0
+    timeout = 10
+
+    for (optchar, optarg) in opts:
+        if optchar == "-?" or optchar == "--help":
+            print_usage()
+            sys.exit(0)
+        elif optchar == "-c":
+            cookie = optarg
+        elif optchar == "-d":
+            doDebug = 1
+        elif optchar == "-n":
+            ownNodeName = optarg
+        elif optchar == "-t":
+            timeout = eval(optarg)
+
+    if doDebug:
+        erl_common.DebugOnAll()
+
+    if len(args) < 3:
+        print_usage()
+        sys.exit(1)
+
+    [remoteNode, module, function] = args[0:3]
+    fargs = args[3:]
+
+    print "Creating node..."
+    n = erl_node.ErlNode(ownNodeName, erl_opts.ErlNodeOpts(cookie=cookie))
+    print "Publishing node..."
+    n.Publish()
+    print "Creating mbox..."
+    m = n.CreateMBox(__TestMBoxCallback)
+    print "Registering mbox as p..."
+    m.RegisterName("p")
+
+    evhand = erl_eventhandler.GetEventHandler()
+    eh = evhand
+
+    evhand.AddTimerEvent(timeout, DoTimeout)
+
+
+    # Schedule to run the RPC after we've started looping
+    evhand.AddTimerEvent(0.001,
+                         erl_common.Callback(
+                             SendTheRPC, m, remoteNode,
+                             module, function,
+                             map(lambda x: ExprRebuildAtoms(eval(x)),
+                                 fargs)))
+
+    print "Looping..."
+    evhand.Loop()
+    sys.exit(0)
+
+try:
+    main(sys.argv)
+except KeyboardInterrupt:
+    print "Interrupted. Exiting."
+    sys.exit(1)
+
+
+
+
+
+
+In [129]: erl_term.TermToBinary( erl_term.ErlTuple(("default","TYPE","32324")) )
+Out[129]: '\x83h\x03k\x00\x07defaultk\x00\x04TYPEk\x00\x0532324'
+
+In [130]: b=erl_term.TermToBinary( erl_term.ErlTuple(("default","TYPE","32324")) )
+
+In [131]: erl_term.Bin
+erl_term.BinariesToTerms  erl_term.BinaryToTerm
+
+In [131]: erl_term.BinaryToTerm(b)
+Out[131]: ('default', 'TYPE', '32324')
+
+In [132]: erl_term.BinaryToTerm(b)
+KeyboardInterrupt
+
+In [132]: b=erl_term.TermToBinary( erl_term.ErlTuple(("a","a","a")) )
+
+In [133]: b
+Out[133]: '\x83h\x03k\x00\x01ak\x00\x01ak\x00\x01a'
+
+
+
+Number info: 0x83
+
+                    ididntsay.com - messages that disappear after reading
+                    Conversion
+                    Decimal     
+                    131
+                    Binary  
+                    10000011
+                    Hexadecimal     
+                    0x83
+                    Roman   CXXXI
+                    Dotted decimal  
+                    0.0.0.131
+
+
+erlang:term_to_binary({<<"a">>,<<"a">>,<<"a">>}).
+<<131,104,3,109,0,0,0,1,97,109,0,0,0,1,97,109,0,0,0,1,97>>
+
+
+So it works
+
+More erlang stuff...
+
+
+(dev1@127.0.0.1)76> bar.
+bar
+(dev1@127.0.0.1)77> h().
+57: binary_to_integer(Ko)
+-> {'EXIT',{badarg,[{erlang,binary_to_integer,
+                            [<<42,41,96,69,81,232,237,180,51,190,152,16,9,5,223,90,
+                               110,192,71,50>>],
+                            []},
+                    {erl_eval,do_apply,6,[{file,"erl_eval.erl"},{line,573}]},
+                    {shell,exprs,7,[{file,"shell.erl"},{line,674}]},
+                    {shell,eval_exprs,7,[{file,"shell.erl"},{line,629}]},
+                    {shell,eval_loop,3,[{file,"shell.erl"},{line,614}]}]}}
+58: binary_to_term(Ko)
+-> {'EXIT',{badarg,[{erlang,binary_to_term,
+                            [<<42,41,96,69,81,232,237,180,51,190,152,16,9,5,223,90,
+                               110,192,71,50>>],
+                            []},
+                    {erl_eval,do_apply,6,[{file,"erl_eval.erl"},{line,573}]},
+                    {shell,exprs,7,[{file,"shell.erl"},{line,674}]},
+                    {shell,eval_exprs,7,[{file,"shell.erl"},{line,629}]},
+                    {shell,eval_loop,3,[{file,"shell.erl"},{line,614}]}]}}
+59: chash:key_of({"asd","ads"})
+-> <<220,253,159,226,69,254,51,149,221,52,19,201,222,120,162,
+     3,148,202,193,219>>
+60: chash:key_of({"asd","ads"})
+-> <<220,253,159,226,69,254,51,149,221,52,19,201,222,120,162,
+     3,148,202,193,219>>
+61: chash:lookup(1, Ko)
+-> {'EXIT',{{badmatch,<<42,41,96,69,81,232,237,180,51,190,
+                        152,16,9,5,223,90,110,192,71,50>>},
+            [{chash,lookup,2,[{file,"src/chash.erl"},{line,96}]},
+             {erl_eval,do_apply,6,[{file,"erl_eval.erl"},{line,573}]},
+             {shell,exprs,7,[{file,"shell.erl"},{line,674}]},
+             {shell,eval_exprs,7,[{file,"shell.erl"},{line,629}]},
+             {shell,eval_loop,3,[{file,"shell.erl"},{line,614}]}]}}
+62: chash:key_of({"asd","ads"})
+-> <<220,253,159,226,69,254,51,149,221,52,19,201,222,120,162,
+     3,148,202,193,219>>
+63: Ko = chash:key_of({"asd","ads"})
+-> {'EXIT',{{badmatch,<<220,253,159,226,69,254,51,149,221,
+                        52,19,201,222,120,162,3,148,202,193,
+                        219>>},
+            [{erl_eval,expr,3,[]}]}}
+64: f(Ko)
+-> ok
+65: Ko = chash:key_of({"asd","ads"})
+-> <<220,253,159,226,69,254,51,149,221,52,19,201,222,120,162,
+     3,148,202,193,219>>
+66: chash:lookup(0, Ko)
+-> {'EXIT',{{badmatch,<<220,253,159,226,69,254,51,149,221,
+                        52,19,201,222,120,162,3,148,202,193,
+                        219>>},
+            [{chash,lookup,2,[{file,"src/chash.erl"},{line,96}]},
+             {erl_eval,do_apply,6,[{file,"erl_eval.erl"},{line,573}]},
+             {shell,exprs,7,[{file,"shell.erl"},{line,674}]},
+             {shell,eval_exprs,7,[{file,"shell.erl"},{line,629}]},
+             {shell,eval_loop,3,[{file,"shell.erl"},{line,614}]}]}}
+67: chash:lookup(0, Ko)
+-> {'EXIT',{{badmatch,<<220,253,159,226,69,254,51,149,221,
+                        52,19,201,222,120,162,3,148,202,193,
+                        219>>},
+            [{chash,lookup,2,[{file,"src/chash.erl"},{line,96}]},
+             {erl_eval,do_apply,6,[{file,"erl_eval.erl"},{line,573}]},
+             {shell,exprs,7,[{file,"shell.erl"},{line,674}]},
+             {shell,eval_exprs,7,[{file,"shell.erl"},{line,629}]},
+             {shell,eval_loop,3,[{file,"shell.erl"},{line,614}]}]}}
+68: chash:lookup(0, {Ko})
+-> {'EXIT',{{badmatch,{<<220,253,159,226,69,254,51,149,221,
+                         52,19,201,222,120,162,3,148,202,
+                         193,219>>}},
+            [{chash,lookup,2,[{file,"src/chash.erl"},{line,96}]},
+             {erl_eval,do_apply,6,[{file,"erl_eval.erl"},{line,573}]},
+             {shell,exprs,7,[{file,"shell.erl"},{line,674}]},
+             {shell,eval_exprs,7,[{file,"shell.erl"},{line,629}]},
+             {shell,eval_loop,3,[{file,"shell.erl"},{line,614}]}]}}
+69: chash:lookup(0, {<<"sda">>})
+-> {'EXIT',{{badmatch,{<<"sda">>}},
+            [{chash,lookup,2,[{file,"src/chash.erl"},{line,96}]},
+             {erl_eval,do_apply,6,[{file,"erl_eval.erl"},{line,573}]},
+             {shell,exprs,7,[{file,"shell.erl"},{line,674}]},
+             {shell,eval_exprs,7,[{file,"shell.erl"},{line,629}]},
+             {shell,eval_loop,3,[{file,"shell.erl"},{line,614}]}]}}
+70: chash:lookup(0, {<<"sda">>,<<"asd">>})
+-> {'EXIT',{function_clause,[{proplists,lookup,
+                                        [0,<<"asd">>],
+                                        [{file,"proplists.erl"},{line,143}]},
+                             {chash,lookup,2,[{file,"src/chash.erl"},{line,97}]},
+                             {erl_eval,do_apply,6,[{file,"erl_eval.erl"},{line,573}]},
+                             {shell,exprs,7,[{file,"shell.erl"},{line,674}]},
+                             {shell,eval_exprs,7,[{file,"shell.erl"},{line,629}]},
+                             {shell,eval_loop,3,[{file,"shell.erl"},{line,614}]}]}}
+71: chash:lookup(0, {<<"sda">>,<<"asd">>,<<"asd">>})
+-> {'EXIT',{{badmatch,{<<"sda">>,<<"asd">>,<<"asd">>}},
+            [{chash,lookup,2,[{file,"src/chash.erl"},{line,96}]},
+             {erl_eval,do_apply,6,[{file,"erl_eval.erl"},{line,573}]},
+             {shell,exprs,7,[{file,"shell.erl"},{line,674}]},
+             {shell,eval_exprs,7,[{file,"shell.erl"},{line,629}]},
+             {shell,eval_loop,3,[{file,"shell.erl"},{line,614}]}]}}
+72: chash:size(1)
+-> {'EXIT',{{badmatch,1},
+            [{chash,size,1,[{file,"src/chash.erl"},{line,178}]},
+             {erl_eval,do_apply,6,[{file,"erl_eval.erl"},{line,573}]},
+             {shell,exprs,7,[{file,"shell.erl"},{line,674}]},
+             {shell,eval_exprs,7,[{file,"shell.erl"},{line,629}]},
+             {shell,eval_loop,3,[{file,"shell.erl"},{line,614}]}]}}
+73: chash:size(chash:members(64))
+-> {'EXIT',{{badmatch,64},
+            [{chash,members,1,[{file,"src/chash.erl"},{line,118}]},
+             {erl_eval,do_apply,6,[{file,"erl_eval.erl"},{line,573}]},
+             {erl_eval,expr_list,6,[{file,"erl_eval.erl"},{line,738}]},
+             {erl_eval,expr,5,[{file,"erl_eval.erl"},{line,330}]},
+             {shell,exprs,7,[{file,"shell.erl"},{line,674}]},
+             {shell,eval_exprs,7,[{file,"shell.erl"},{line,629}]},
+             {shell,eval_loop,3,[{file,"shell.erl"},{line,614}]}]}}
+74: h()
+-> ok
+75: foo
+-> foo
+76: bar
+-> bar
+ok
+(dev1@127.0.0.1)78>

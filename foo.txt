@@ -1,0 +1,56 @@
+
+
+It's a piece of python code that I'm writing to calculate partition starts, and identifiers by applying a ring 
+
+
+The number line 2 ** 160 is partitioned, thats   (by default into 64 chunks) and those chunks are assigned sequentially in a modulur sequence to the nodes (machines) in the cluster.
+
+
+So with five nodes
+
+partition | node
+1         | 1
+2         | 2
+3         | 3
+4         | 4
+5         | 5
+          |
+6         | 1
+7         | 2
+8         | 3
+... etc
+
+
+Data is replicated according to the replication factor, refered to as the n_val, the n_val defaults to 3 and is seldom changed.
+
+The replicas are refered to as secondary partitions. 
+
+So with five nodes and a replication factor of 3
+
+partition                             | node   | node  | node
+1 (data copied to partition 2, and 3) | 1      |2      |3   
+2 (data copied to partition 3, and 4) | 2      |3      |4 
+3 (data copied to partition 4, and 5) | 3      |4      |5 
+4 (data copied to partition 5, and 6) | 4      |5      |1 
+5 (data copied to partition 6, and 7) | 5      |1      |2 
+6 (data copied to partition 7, and 8) | 1      |2      |3 
+7 (data copied to partition 8, and 9) | 2      |3      |4 
+8 (data copied to partition 9, and 10)| 3      |4      |5
+
+
+Imagine a hashing function which only works with numbers from 1 to 64.
+Applies the identity function and assigns to a sequence of numbers 1..64.
+
+
+
+The is also assigned to secondary locations in the partitioning scheme.
+
+
+
+Lets take an example: 
+
+x = bucket-type ++  bucket ++ key
+loc=
+
+
+
