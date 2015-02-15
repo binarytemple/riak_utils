@@ -202,7 +202,8 @@ So it doesn't look like anything fancy is happening there. Lets investigate furt
 WARNING: Nodes in this cluster can no longer be
 downgraded to a version of Riak prior to 2.0
 [/basho/riak/dev%]
-[/basho/riak/dev%]curl -XGET "localhost:10018/types/default/buckets/foo/keys/bar"                  test%                                                                                              [/basho/riak/dev%]curl -XGET "localhost:10018/types/foodor/buckets/foo/keys/bar"
+[/basho/riak/dev%]curl -XGET "localhost:10018/types/default/buckets/foo/keys/bar"                  
+test%                                                                                              [/basho/riak/dev%]curl -XGET "localhost:10018/types/foodor/buckets/foo/keys/bar"
 Unknown bucket type: foodor%                                                                       [/basho/riak/dev%]curl -XGET "localhost:10018/types/foodoo/buckets/foo/keys/bar"
 Unknown bucket type: foodoo%                                                                       [/basho/riak/dev%]curl -XGET "localhost:10018/types/fodoo/buckets/foo/keys/bar"
 Unknown bucket type: fodoo%                                                                        [/basho/riak/dev%]curl -XGET "localhost:10018/types/fodddo/buckets/foo/keys/bar"
@@ -227,5 +228,127 @@ Invoking from riak attach produces the same result:
   105,113,152,3,152>>
   
 ```
+
+Found http://www.asciitable.com useful while figuring out the number representations.
+
+
+Tracing is on. I execute the following request.
+
+```
+[/basho/riak/dev%]curl -XGET "localhost:10018/types/fodddo/buckets/foo/keys/bar"
+not found
+```
+
+I see the following tracing output, there's some duplicate information:
+
+```
+(dev1@127.0.0.1)57>
+{trace,<6166.28971.0>,call,
+       {riak_core_util,chash_std_keyfun,
+                       [{{<<"fodddo">>,<<"foo">>},<<"bar">>}]}}
+{trace,<6166.28971.0>,call,
+       {chash,key_of,[{{<<"fodddo">>,<<"foo">>},<<"bar">>}]}}
+{trace,<6166.28971.0>,call,
+       {erlang,term_to_binary,[{{<<"fodddo">>,<<"foo">>},<<"bar">>}]}}
+{trace,<6166.28971.0>,return_from,
+       {erlang,term_to_binary,1},
+       <<131,104,2,104,2,109,0,0,0,6,102,111,100,100,100,111,109,0,0,0,3,102,
+         111,111,109,0,0,0,3,98,97,114>>}
+{trace,<6166.28971.0>,call,
+       {crypto,hash,
+               [sha,
+                <<131,104,2,104,2,109,0,0,0,6,102,111,100,100,100,111,109,0,
+                  0,0,3,102,111,111,109,0,0,0,3,98,97,114>>]}}
+{trace,<6166.28971.0>,call,
+       {crypto,hash,
+               [sha,
+                <<131,104,2,104,2,109,0,0,0,6,102,111,100,100,100,111,109,0,0,
+                  0,3,102,111,111,109,0,0,0,3,98,97,114>>,
+                32,20000,initial]}}
+{trace,<6166.28971.0>,return_from,
+       {chash,key_of,1},
+       <<217,141,87,102,4,57,11,252,233,16,190,235,105,146,157,105,113,152,3,
+         152>>}
+```
+
+The important part is the last bit, this is what we want to emulate.
+
+```
+{trace,<6166.28971.0>,return_from,
+       {chash,key_of,1},
+       <<217,141,87,102,4,57,11,252,233,16,190,235,105,146,157,105,113,152,3,
+         152>>}
+```
+
+Lets take a look at the actual Integer value:
+
+```
+(dev1@127.0.0.1)57> <<Idx:160/integer>> =  <<217,141,87,102,4,57,11,252,233,16,190,235,105,146,157,105,113,152,3,152>>
+(dev1@127.0.0.1)57> .
+<<217,141,87,102,4,57,11,252,233,16,190,235,105,146,157,
+  105,113,152,3,152>>
+(dev1@127.0.0.1)58> Idx.
+1242003015825056599746939281425212232690046600088
+```
+
+So, 1242003015825056599746939281425212232690046600088 is what we are aiming for.
+
+Lets try it in Python 
+
+```
+
+In [128]:from py_interface import erl_term
+In [129]:bt= erl_term.ErlBinary("fodddo")
+In [130]:b = erl_term.ErlBinary("foo")
+
+In [131]:k = erl_term.ErlBinary("bar")
+
+In [132]:etb=erl_term.TermToBinary(erl_term.ErlTuple((erl_term.ErlTuple((bt,b)),k)))
+In [139]: long(sha(etb).hexdigest(),16)
+
+Out[139]: 1242003015825056599746939281425212232690046600088L
+
+
+```
+
+tada.. it worked.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
