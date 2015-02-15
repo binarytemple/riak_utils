@@ -65,7 +65,7 @@ https://github.com/basho/riak_core/blob/7898729fa72af47194df410b480f5df78d488d7b
 
 Looking at a bucket properties I see that the default consistent hashing functions is
 
-"chash_keyfun":{"mod":"riak_core_util","fun":"chash_std_keyfun"},
+    "chash_keyfun":{"mod":"riak_core_util","fun":"chash_std_keyfun"},
 
 So this is where the magic happens
 
