@@ -157,4 +157,35 @@ And the results
 ```
 
 
+Having created and activated a bucket type, we can also inspect the behavior when hashing a tuple of 
+* bucket-type
+* bucket
+* key
+```
+
+{trace,<6166.5499.0>,call,
+       {chash,key_of,[{{<<"fodddo">>,<<"foo">>},<<"bar">>}]}}
+{trace,<6166.5499.0>,return_from,
+       {chash,key_of,1},
+       <<217,141,87,102,4,57,11,252,233,16,190,235,105,146,157,105,113,152,3,
+         152>>}
+(dev1@127.0.0.1)20>
+───────────────────────────────────────────────────────────────────────────────────────────────────
+Usage: riak-admin bucket-type activate <type>
+[/basho/riak/dev%]./dev1/bin/riak-admin bucket-type activate fodddo
+fodddo has been activated
+
+WARNING: Nodes in this cluster can no longer be
+downgraded to a version of Riak prior to 2.0
+[/basho/riak/dev%]
+[/basho/riak/dev%]curl -XGET "localhost:10018/types/default/buckets/foo/keys/bar"                  test%                                                                                              [/basho/riak/dev%]curl -XGET "localhost:10018/types/foodor/buckets/foo/keys/bar"
+Unknown bucket type: foodor%                                                                       [/basho/riak/dev%]curl -XGET "localhost:10018/types/foodoo/buckets/foo/keys/bar"
+Unknown bucket type: foodoo%                                                                       [/basho/riak/dev%]curl -XGET "localhost:10018/types/fodoo/buckets/foo/keys/bar"
+Unknown bucket type: fodoo%                                                                        [/basho/riak/dev%]curl -XGET "localhost:10018/types/fodddo/buckets/foo/keys/bar"
+not found
+[/basho/riak/dev%]curl -XGET "localhost:10018/types/fodddo/buckets/foo/keys/bar"
+```
+
+So it doesn't look like anything fancy is happening there. Lets investigate further why the values are wrong.
+
 
