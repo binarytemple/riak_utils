@@ -73,6 +73,63 @@ So this is where the magic happens
 riak_core_util:chash_std_keyfun/
 ```
 
+I get Erlang debugging up and running to trace into this function call 
+
+```
+** exception error: undefined function debugger:start/0
+(dev1@127.0.0.1)10>
+(dev1@127.0.0.1)10> code:add_pathz("/usr/local/Cellar/erlang/17.3/lib/erlang/lib/runtime_tools-1.8.
+14/ebin").
+true
+(dev1@127.0.0.1)11> debugger:start().                                                              ** exception error: undefined function debugger:start/0
+(dev1@127.0.0.1)12> dbg:start().
+{ok,<0.2306.0>}
+(dev1@127.0.0.1)13>  dbg:tracer(process, {fun(Msg, _) -> io:format("~p\n", [Msg]) end, []}).
+{ok,<0.2306.0>}
+(dev1@127.0.0.1)14>
+(dev1@127.0.0.1)14> dbg:tpl(riak_core_util,chash_std_keyfun, '_', []).
+{ok,[{matched,'dev1@127.0.0.1',1}]}
+(dev1@127.0.0.1)15>
+
+
+(dev1@127.0.0.1)14> dbg:tpl(riak_core_util,chash_std_keyfun, '_', []).
+{ok,[{matched,'dev1@127.0.0.1',1}]}
+(dev1@127.0.0.1)15>
+(dev1@127.0.0.1)15>
+(dev1@127.0.0.1)15>  dbg:p(all, c).
+{ok,[{matched,'dev1@127.0.0.1',1040}]}
+{trace,<6166.2950.0>,call,
+       {riak_core_util,chash_std_keyfun,[{<<"foo">>,<<"bar">>}]}}
+{trace,<6166.2973.0>,call,
+       {riak_core_util,chash_std_keyfun,[{<<"foo">>,<<"bar">>}]}}
+{trace,<6166.2974.0>,call,
+       {riak_core_util,chash_std_keyfun,[{<<"foo">>,<<"bar">>}]}}
+{trace,<6166.784.0>,call,
+       {riak_core_util,chash_std_keyfun,[{<<"foo">>,<<"bar">>}]}}
+{trace,<6166.763.0>,call,
+       {riak_core_util,chash_std_keyfun,[{<<"foo">>,<<"bar">>}]}}
+(dev1@127.0.0.1)16>
+───────────────────────────────────────────────────────────────────────────────────────────────────
+ {webmachine_decision_core,decision,1,
+                           [{file,"src/webmachine_decision_core.erl"},
+                            {line,558}]},
+ {webmachine_decision_core,handle_request,2,
+                           [{file,"src/webmachine_decision_core.erl"},
+                            {line,33}]},
+ {webmachine_mochiweb,loop,2,[{file,"src/webmachine_mochiweb.erl"},{line,74}]},
+ {mochiweb_http,parse_headers,5,[{file,"src/mochiweb_http.erl"},{line,180}]},
+ {proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,239}]}]</pre><P><HR><ADDRESS>mochiweb+webmachine web server</ADDRESS></body></html>%                                                        [~%]curl "localhost:10018/buckets/foo/keys/bar"
+not found
+[~%]curl -XPUT "localhost:10018/buckets/foo/keys/bar" -d test
+[~%]curl "localhost:10018/buckets/foo/keys/bar"
+test%                                                                                              [~%]
+[~%]curl "localhost:10018/buckets/foo/keys/bar"
+test%
+[~%]curl -XPUT "localhost:10018/buckets/foo/keys/bar" -d test
+```
+
+
+
 
 
 
