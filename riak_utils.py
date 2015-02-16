@@ -53,25 +53,28 @@ def whatp(bucket_type,bucket,key, ring_size):
     part = ( 2 ** 160 ) / ring_size
 
     id_hash = chash(bucket_type,bucket,key)
-    pt = [((x + 1, x * part), ((  ((x + 1) % ring_size) + 1    ), ((x + 1) % ring_size) * part  ),
-           ((  ((x + 2) % ring_size) + 1    ), ((x + 2) % ring_size) * part  )     ) for x in range(0, ring_size)]
-    # print pt
-    print "Identifier hashes to:\n%s" % id_hash
-    res = None
-    for p in zip(pt, pt[1:-1]):
 
-        start = p[0][0][1]
-        end = p[1][0][1]
-        print "start: %s, end: %s" % (start,end)
 
-        if start <= id_hash < end:
-            res = p[0]
+    # Partitioning rule... id is assigned to the partition after the hash and then two more
+    pt = [(x + 1, x * part  ) for x in range(0, ring_size)]
+    pt.reverse()
+
+    primary = None
+
+    for idx, val in enumerate(pt):
+        if id_hash > val[1]:
+            primary = idx -1
             break
 
-    if res == None:
-        return pt[-1]
-    else:
-        return res
+    # print primary
+    ret = []
+    n_val =3
+    count=0
+    while count < n_val:
+        ret.append(pt[(primary - count % 64)])
+        count += 1
+
+    return id_hash,ret
 
 def chash(bucket_type,bucket,key):
     bt= erl_term.ErlBinary(bucket_type)

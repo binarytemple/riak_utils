@@ -54,9 +54,12 @@ def main():
       key = a
 
   #print "%s - %s" % (oid,ring_size)
-  res = riak_utils.whatp(bucket_type,bucket,key,int(ring_size))
+  id_hash,partitions = riak_utils.whatp(bucket_type,bucket,key,int(ring_size))
+
+  print "id hash:"
+  print id_hash
   print "Partition placement:" 
-  for i,p in res:
+  for i,p in partitions:
       print "%s:%s" % (p,i)
 
 def helpmsg():
