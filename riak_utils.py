@@ -6,6 +6,9 @@
 # 
 # filter(lambda x: x[0][0] == 1, permute(16,0,100))
 
+from py_interface import erl_term
+from sha import sha
+
 def permute(ring_size, start, end):
     """
     Usage example:
@@ -28,7 +31,7 @@ def permute(ring_size, start, end):
     return [(whatp(x, ring_size)) for x in range(start, end)]
 
 
-def whatp(oid, ring_size):
+def whatp(bucket_type,bucket,key, ring_size):
     """
     Returns a tuple containing three tuples
        * primary partition number (indexed from 1) and partition start on 2 ** 160 numberline
@@ -48,11 +51,11 @@ def whatp(oid, ring_size):
     part = ( 2 ** 160 ) / ring_size
     from sha import sha
 
-    id_hash = long(sha(str(oid)).hexdigest(), 16)
+    id_hash = chash(bucket_type,bucket,key)
     pt = [((x + 1, x * part), ((  ((x + 1) % ring_size) + 1    ), ((x + 1) % ring_size) * part  ),
            ((  ((x + 2) % ring_size) + 1    ), ((x + 2) % ring_size) * part  )     ) for x in range(0, ring_size)]
     # print pt
-
+    print "Identifier hashes to:\n%s" % id_hash
     res = None
     for p in zip(pt, pt[1:-1]):
         start = p[0][0][1]
@@ -66,11 +69,19 @@ def whatp(oid, ring_size):
     else:
         return res
 
+def chash(bucket_type,bucket,key):
+    bt= erl_term.ErlBinary("fodddo")  
+    b = erl_term.ErlBinary("foo")  
+    k = erl_term.ErlBinary("bar")  
+    etb=erl_term.TermToBinary(erl_term.ErlTuple((erl_term.ErlTuple((bt,b)),k)))
+    return long(sha(etb).hexdigest(),16)
 
 # #
 # The following code take from:
 #
 # https://www.udacity.com/wiki/plotting-graphs-with-python
+#
+# This code is not necessary to run the util, I'm just dumping it here temporarily
 #
 
 from matplotlib import pyplot

@@ -1,14 +1,16 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 
 """
 
 Usage:
-     ./riak_util -r <ring_size> -o "<oid>"
+     ./riak_util -r <ring_size> -t "<bucket_type>" -b "<bucket>" -k "<key>"
 
 """
 
 import pkgutil
 import importlib
+from py_interface import erl_term
+from sha import sha
 
 # packages = pkgutil.walk_packages(path='.')
 # for importer, name, is_package in packages:
@@ -21,16 +23,19 @@ import riak_utils
 def main():
   # parse command line options
   ring_size=None
-  oid=None
+  bucket_type=None
+  bucket=None
+  key=None
   try:
-    opts, args = getopt.getopt(sys.argv[1:], "hr:o:", ["help","ring-size","oid"])
+      opts, args = getopt.getopt(sys.argv[1:], "hr:t:b:k:", ["help","ring-size","bucket-type","bucket","key"])
   except getopt.error, msg:
     print msg
-    print "for help use --help"
+    helpmsg()
     sys.exit(2)
 
   if len(opts) < 1:
     helpmsg()
+    sys.exit(2)
 
   print opts
 
@@ -41,11 +46,18 @@ def main():
       sys.exit(0)
     if o in "-r":
       ring_size = a
-    if o in "-o":
-      oid = a
+    if o in "-b":
+      bucket = a
+    if o in "-t":
+      bucket_type = a
+    if o in "-k":
+      key = a
 
   #print "%s - %s" % (oid,ring_size)
-  print riak_utils.whatp(oid,int(ring_size))
+  res = riak_utils.whatp(bucket_type,bucket,key,int(ring_size))
+  print "Partition placement:" 
+  for i in res:
+      print i
 
 def helpmsg():
     print "for help use --help"
