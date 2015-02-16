@@ -6,8 +6,10 @@
 # 
 # filter(lambda x: x[0][0] == 1, permute(16,0,100))
 
-from py_interface import erl_term
 from sha import sha
+
+from py_interface import erl_term
+
 
 def permute(ring_size, start, end):
     """
@@ -49,7 +51,6 @@ def whatp(bucket_type,bucket,key, ring_size):
            (11, 913438523331814323877303020447676887284957839360L))
     """
     part = ( 2 ** 160 ) / ring_size
-    from sha import sha
 
     id_hash = chash(bucket_type,bucket,key)
     pt = [((x + 1, x * part), ((  ((x + 1) % ring_size) + 1    ), ((x + 1) % ring_size) * part  ),
@@ -58,9 +59,12 @@ def whatp(bucket_type,bucket,key, ring_size):
     print "Identifier hashes to:\n%s" % id_hash
     res = None
     for p in zip(pt, pt[1:-1]):
+
         start = p[0][0][1]
         end = p[1][0][1]
-        if id_hash >= start and id_hash < end:
+        print "start: %s, end: %s" % (start,end)
+
+        if start <= id_hash < end:
             res = p[0]
             break
 
@@ -70,9 +74,9 @@ def whatp(bucket_type,bucket,key, ring_size):
         return res
 
 def chash(bucket_type,bucket,key):
-    bt= erl_term.ErlBinary("fodddo")  
-    b = erl_term.ErlBinary("foo")  
-    k = erl_term.ErlBinary("bar")  
+    bt= erl_term.ErlBinary(bucket_type)
+    b = erl_term.ErlBinary(bucket)
+    k = erl_term.ErlBinary(key)
     etb=erl_term.TermToBinary(erl_term.ErlTuple((erl_term.ErlTuple((bt,b)),k)))
     return long(sha(etb).hexdigest(),16)
 

@@ -37,7 +37,7 @@ def main():
     helpmsg()
     sys.exit(2)
 
-  print opts
+  #print opts
 
   # process options
   for o, a in opts:
@@ -56,8 +56,8 @@ def main():
   #print "%s - %s" % (oid,ring_size)
   res = riak_utils.whatp(bucket_type,bucket,key,int(ring_size))
   print "Partition placement:" 
-  for i in res:
-      print i
+  for i,p in res:
+      print "%s:%s" % (p,i)
 
 def helpmsg():
     print "for help use --help"

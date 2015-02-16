@@ -296,16 +296,15 @@ So, 1242003015825056599746939281425212232690046600088 is what we are aiming for.
 Lets try it in Python 
 
 ```
+from py_interface import erl_term
+bt= erl_term.ErlBinary("fodddo")
+b = erl_term.ErlBinary("foo")
+k = erl_term.ErlBinary("bar")
+etb=erl_term.TermToBinary(erl_term.ErlTuple((erl_term.ErlTuple((bt,b)),k)))
+long(sha(etb).hexdigest(),16)
+```
 
-In [128]:from py_interface import erl_term
-In [129]:bt= erl_term.ErlBinary("fodddo")
-In [130]:b = erl_term.ErlBinary("foo")
-
-In [131]:k = erl_term.ErlBinary("bar")
-
-In [132]:etb=erl_term.TermToBinary(erl_term.ErlTuple((erl_term.ErlTuple((bt,b)),k)))
-In [139]: long(sha(etb).hexdigest(),16)
-
+```
 Out[139]: 1242003015825056599746939281425212232690046600088L
 
 
