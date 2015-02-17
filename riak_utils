@@ -46,9 +46,9 @@ def main():
       print __doc__
       sys.exit(0)
     if o in "-n":
-      _n_val = a
+      _n_val = int(a)
     if o in "-r":
-      _ring_size = a
+      _ring_size = int(a)
     if o in "-b":
       _bucket = a
     if o in "-t":
