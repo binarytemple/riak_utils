@@ -33,7 +33,7 @@ def permute(ring_size, start, end):
     return [(whatp(x, ring_size)) for x in range(start, end)]
 
 
-def whatp(bucket_type,bucket,key, ring_size,n_val=3):
+def whatp(bucket_type=None,bucket=None,key=None,ring_size=None,n_val=None):
     """
     Returns a tuple containing three tuples
        * primary partition number (indexed from 1) and partition start on 2 ** 160 numberline
@@ -42,42 +42,11 @@ def whatp(bucket_type,bucket,key, ring_size,n_val=3):
 
     :rtype : object
     """
-    part = ( 2 ** 160 ) / ring_size
+    part = ( 2 ** 160 ) / int(ring_size)
     id_hash = chash(bucket_type,bucket,key)
 
     # Partitioning rule... id is assigned to the partition after the hash and then two more
-    pt = [(x + 1, x * part  ) for x in range(0, ring_size)]
-    pt.reverse()
-    primary = None
-
-    for idx, val in enumerate(pt):
-        if id_hash > val[1]:
-            primary = idx -1
-            break
-
-    ret = []
-    count=0
-    while count < n_val:
-        ret.append(pt[(primary - count % 64)])
-        count += 1
-
-    return id_hash,ret
-
-
-def whatp(bucket,key, ring_size,n_val=3):
-    """
-    Returns a tuple containing three tuples
-       * primary partition number (indexed from 1) and partition start on 2 ** 160 numberline
-       * as above but for the secondary partition n+1
-       * as above but for the secondary partition n+2
-
-    :rtype : object
-    """
-    part = ( 2 ** 160 ) / ring_size
-    id_hash = chash(bucket,key)
-
-    # Partitioning rule... id is assigned to the partition after the hash and then two more
-    pt = [(x + 1, x * part  ) for x in range(0, ring_size)]
+    pt = [(x + 1, x * part  ) for x in range(0, int(ring_size))]
     pt.reverse()
     primary = None
 
@@ -95,17 +64,17 @@ def whatp(bucket,key, ring_size,n_val=3):
     return id_hash,ret
 
 def chash(bucket_type,bucket,key):
-    bt= erl_term.ErlBinary(bucket_type)
-    b = erl_term.ErlBinary(bucket)
-    k = erl_term.ErlBinary(key)
-    etb=erl_term.TermToBinary(erl_term.ErlTuple((erl_term.ErlTuple((bt,b)),k)))
-    return long(sha(etb).hexdigest(),16)
-
-def chash(bucket,key):
-    b = erl_term.ErlBinary(bucket)
-    k = erl_term.ErlBinary(key)
-    etb=erl_term.TermToBinary(erl_term.ErlTuple((b,k)))
-    return long(sha(etb).hexdigest(),16)
+    if bucket_type != None:
+        bt= erl_term.ErlBinary(bucket_type)
+        b = erl_term.ErlBinary(bucket)
+        k = erl_term.ErlBinary(key)
+        etb=erl_term.TermToBinary(erl_term.ErlTuple((erl_term.ErlTuple((bt,b)),k)))
+        return long(sha(etb).hexdigest(),16)
+    else:
+        b = erl_term.ErlBinary(bucket)
+        k = erl_term.ErlBinary(key)
+        etb=erl_term.TermToBinary(erl_term.ErlTuple((b,k)))
+        return long(sha(etb).hexdigest(),16)
 
 # #
 # The following code take from:

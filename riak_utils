@@ -22,13 +22,13 @@ import riak_utils
 
 def main():
   # parse command line options
-  ring_size=None
-  bucket_type=None
-  bucket=None
-  key=None
-  n_val=None
+  _ring_size=64
+  _bucket_type=None
+  _bucket=None
+  _key=None
+  _n_val=3
   try:
-      opts, args = getopt.getopt(sys.argv[1:], "hn:r:t:b:k:", ["help","nval","ring-size","bucket-type","bucket","key"])
+      opts, args = getopt.getopt(sys.argv[1:], "h:n:r:t:b:k:", ["help","nval","ring-size","bucket-type","bucket","key"])
   except getopt.error, msg:
     print msg
     helpmsg()
@@ -46,25 +46,29 @@ def main():
       print __doc__
       sys.exit(0)
     if o in "-n":
-        n_val = a
+      _n_val = a
     if o in "-r":
-      ring_size = a
+      _ring_size = a
     if o in "-b":
-      bucket = a
+      _bucket = a
     if o in "-t":
-      bucket_type = a
+      _bucket_type = a
     if o in "-k":
-      key = a
+      _key = a
 
-  if(bucket_type != None):
-    id_hash,partitions = riak_utils.whatp(bucket_type,bucket,key,int(ring_size))
+  print "type,bucket,key,ring_size,n_val"
+  print _bucket_type,_bucket,_key,_ring_size,_n_val
+
+  if(_bucket_type != None):
+    id_hash,partitions = riak_utils.whatp(bucket_type=_bucket_type,bucket=_bucket,key=_key,ring_size=_ring_size,n_val=_n_val) 
   else:
-    id_hash,partitions = riak_utils.whatp(bucket,key,int(ring_size))
-  print "type,bucket,key:"
-  print bucket_type,bucket,key 
+    id_hash,partitions = riak_utils.whatp(bucket=_bucket,key=_key,ring_size=_ring_size,n_val=_n_val) 
+
+
   print "id hash:"
   print id_hash
   print "Partition placement:" 
+
   for i,p in partitions:
       print "%s:%s" % (p,i)
 
