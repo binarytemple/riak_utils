@@ -26,8 +26,9 @@ def main():
   bucket_type=None
   bucket=None
   key=None
+  n_val=None
   try:
-      opts, args = getopt.getopt(sys.argv[1:], "hr:t:b:k:", ["help","ring-size","bucket-type","bucket","key"])
+      opts, args = getopt.getopt(sys.argv[1:], "hn:r:t:b:k:", ["help","nval","ring-size","bucket-type","bucket","key"])
   except getopt.error, msg:
     print msg
     helpmsg()
@@ -44,6 +45,8 @@ def main():
     if o in ("-h", "--help"):
       print __doc__
       sys.exit(0)
+    if o in "-n":
+        n_val = a
     if o in "-r":
       ring_size = a
     if o in "-b":
@@ -53,9 +56,12 @@ def main():
     if o in "-k":
       key = a
 
-  #print "%s - %s" % (oid,ring_size)
-  id_hash,partitions = riak_utils.whatp(bucket_type,bucket,key,int(ring_size))
-
+  if(bucket_type != None):
+    id_hash,partitions = riak_utils.whatp(bucket_type,bucket,key,int(ring_size))
+  else:
+    id_hash,partitions = riak_utils.whatp(bucket,key,int(ring_size))
+  print "type,bucket,key:"
+  print bucket_type,bucket,key 
   print "id hash:"
   print id_hash
   print "Partition placement:" 
